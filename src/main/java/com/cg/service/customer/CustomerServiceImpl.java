@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 
@@ -20,8 +21,8 @@ public class CustomerServiceImpl implements ICustomerService {
 
 
     @Override
-    public Iterable<Customer> findAll() {
-        return null;
+    public List<Customer> findAll() {
+        return customerRepository.findAll();
     }
 
     @Override
@@ -31,7 +32,7 @@ public class CustomerServiceImpl implements ICustomerService {
 
     @Override
     public Optional<Customer> findById(Long id) {
-        return Optional.empty();
+        return customerRepository.findById(id);
     }
 
     @Override

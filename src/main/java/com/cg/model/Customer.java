@@ -15,7 +15,9 @@ public class Customer extends BaseEntity {
     @Column(name = "full_name")
     private String fullName;
 
+    @Column(unique = true, nullable = false)
     private String email;
+
     private String phone;
     private String address;
 
