@@ -12,8 +12,9 @@ public class Deposit extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @Column(name = "customer_id")
-    private long customerId;
+    @ManyToOne(targetEntity = Customer.class)
+    @JoinColumn(name = "customer_id", referencedColumnName = "id", nullable = false)
+    private Customer customer;
 
     @Column(name = "transaction_amount", precision = 12, scale = 0, nullable = false)
     private BigDecimal transactionAmount;
@@ -21,9 +22,9 @@ public class Deposit extends BaseEntity {
     public Deposit() {
     }
 
-    public Deposit(long id, long customerId, BigDecimal transactionAmount) {
+    public Deposit(long id, Customer customer, BigDecimal transactionAmount) {
         this.id = id;
-        this.customerId = customerId;
+        this.customer = customer;
         this.transactionAmount = transactionAmount;
     }
 
@@ -35,12 +36,12 @@ public class Deposit extends BaseEntity {
         this.id = id;
     }
 
-    public long getCustomerId() {
-        return customerId;
+    public Customer getCustomer() {
+        return customer;
     }
 
-    public void setCustomerId(long customerId) {
-        this.customerId = customerId;
+    public void setCustomer(Customer customer) {
+        this.customer = customer;
     }
 
     public BigDecimal getTransactionAmount() {

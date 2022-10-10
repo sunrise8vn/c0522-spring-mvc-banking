@@ -109,7 +109,7 @@ public class AppConfig implements WebMvcConfigurer, ApplicationContextAware {
         dataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
         dataSource.setUrl("jdbc:mysql://localhost:3306/c0522_mvc_banking?characterEncoding=UTF-8");
         dataSource.setUsername("root");
-        dataSource.setPassword("1234");
+        dataSource.setPassword("123");
         return dataSource;
     }
 
@@ -124,6 +124,7 @@ public class AppConfig implements WebMvcConfigurer, ApplicationContextAware {
         Properties properties = new Properties();
         properties.setProperty("hibernate.connection.useUnicode", "true");
         properties.setProperty("hibernate.connection.charset", "UTF-8");
+        properties.setProperty("hibernate.show_sql", "true");
         properties.setProperty("hibernate.format_sql", "true");
         properties.setProperty("hibernate.hbm2ddl.auto", "update");
         properties.setProperty("hibernate.dialect", "org.hibernate.dialect.MySQL8Dialect");

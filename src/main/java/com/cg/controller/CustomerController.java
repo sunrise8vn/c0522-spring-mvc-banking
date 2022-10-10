@@ -3,6 +3,7 @@ package com.cg.controller;
 
 import com.cg.model.Customer;
 import com.cg.model.Deposit;
+import com.cg.model.Transfer;
 import com.cg.service.customer.ICustomerService;
 import com.cg.service.deposit.IDepositService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,6 +67,29 @@ public class CustomerController {
         return modelAndView;
     }
 
+    @GetMapping("/transfer/{senderId}")
+    public ModelAndView showTransferPage(@PathVariable long senderId) {
+        ModelAndView modelAndView = new ModelAndView();
+        modelAndView.setViewName("customer/transfer");
+
+        Optional<Customer> customerOptional = customerService.findById(senderId);
+
+        if (!customerOptional.isPresent()) {
+            modelAndView.addObject("error", true);
+        }
+        else {
+
+            List<Customer> recipients = customerService.findAllByIdNot(senderId);
+
+            Transfer transfer = new Transfer();
+            modelAndView.addObject("transfer", transfer);
+            modelAndView.addObject("recipients", recipients);
+            modelAndView.addObject("sender", customerOptional.get());
+        }
+
+        return modelAndView;
+    }
+
     @PostMapping("/create")
     public ModelAndView doCreate(@ModelAttribute Customer customer) {
         ModelAndView modelAndView = new ModelAndView();
@@ -94,22 +118,78 @@ public class CustomerController {
 
         try {
             Customer customer = customerOptional.get();
-            BigDecimal currentBalance = customer.getBalance();
-            BigDecimal transactionAmount = deposit.getTransactionAmount();
-            BigDecimal newBalance = currentBalance.add(transactionAmount);
-            customer.setBalance(newBalance);
-            customerService.save(customer);
 
-            deposit.setId(0L);
-            deposit.setCustomerId(customerId);
-            depositService.save(deposit);
+            Customer newCustomer = customerService.deposit(customer, deposit);
 
             modelAndView.addObject("deposit", new Deposit());
-            modelAndView.addObject("customer", customer);
+            modelAndView.addObject("customer", newCustomer);
             modelAndView.addObject("success", true);
         } catch (Exception e) {
             modelAndView.addObject("deposit", new Deposit());
             modelAndView.addObject("customer", customerOptional.get());
+            modelAndView.addObject("error", true);
+        }
+
+        return modelAndView;
+    }
+
+
+    @PostMapping("/transfer/{senderId}")
+    public ModelAndView doTransfer(@PathVariable long senderId, @ModelAttribute Transfer transfer) {
+        ModelAndView modelAndView = new ModelAndView();
+        modelAndView.setViewName("customer/transfer");
+
+        Optional<Customer> senderOptional = customerService.findById(senderId);
+
+        if (!senderOptional.isPresent()) {
+            modelAndView.addObject("error", true);
+        }
+
+        Optional<Customer> recipientOptional = customerService.findById(senderId);
+
+        if (!recipientOptional.isPresent()) {
+            modelAndView.addObject("error", true);
+        }
+
+        Customer sender = senderOptional.get();
+
+        Customer recipient = recipientOptional.get();
+
+        List<Customer> recipients = customerService.findAllByIdNot(senderId);
+
+        BigDecimal currentBalanceSender = sender.getBalance();
+
+        BigDecimal transferAmount = transfer.getTransferAmount();
+        long fees = 10;
+        BigDecimal feesAmount = transferAmount.multiply(new BigDecimal(fees)).divide(new BigDecimal(100L));
+        BigDecimal transactionAmount = transferAmount.add(feesAmount);
+
+        if (currentBalanceSender.compareTo(transactionAmount) < 0) {
+            modelAndView.addObject("deposit", new Transfer());
+            modelAndView.addObject("sender", sender);
+            modelAndView.addObject("recipients", recipients);
+            modelAndView.addObject("error", true);
+            modelAndView.addObject("message", "SỐ dư người gửi không đủ thực hiện giao dịch");
+            return modelAndView;
+        }
+
+        try {
+            transfer.setId(0L);
+            transfer.setSender(sender);
+            transfer.setFees(fees);
+            transfer.setFeesAmount(feesAmount);
+            transfer.setTransactionAmount(transactionAmount);
+
+            Customer newSender = customerService.transfer(transfer);
+
+            modelAndView.addObject("deposit", new Transfer());
+            modelAndView.addObject("sender", newSender);
+            modelAndView.addObject("recipients", recipients);
+            modelAndView.addObject("success", true);
+        } catch (Exception e) {
+            modelAndView.addObject("deposit", new Transfer());
+            modelAndView.addObject("sender", sender);
+            modelAndView.addObject("recipients", recipients);
             modelAndView.addObject("error", true);
         }
 
