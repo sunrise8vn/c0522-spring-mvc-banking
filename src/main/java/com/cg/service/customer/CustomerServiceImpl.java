@@ -6,6 +6,7 @@ import com.cg.model.Deposit;
 import com.cg.model.Transfer;
 import com.cg.repository.CustomerRepository;
 import com.cg.repository.DepositRepository;
+import com.cg.repository.TransferRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +26,9 @@ public class CustomerServiceImpl implements ICustomerService {
 
     @Autowired
     private DepositRepository depositRepository;
+
+    @Autowired
+    private TransferRepository transferRepository;
 
 
     @Override
@@ -48,20 +52,29 @@ public class CustomerServiceImpl implements ICustomerService {
     }
 
     @Override
+    public Boolean existsByIdEquals(long id) {
+        return customerRepository.existsById(id);
+    }
+
+    @Override
     public Customer deposit(Customer customer, Deposit deposit) {
         BigDecimal currentBalance = customer.getBalance();
         BigDecimal transactionAmount = deposit.getTransactionAmount();
-        BigDecimal newBalance = currentBalance.add(transactionAmount);
+//        BigDecimal newBalance = currentBalance.add(transactionAmount);
 
         try {
-            customer.setBalance(newBalance);
-            Customer newCustomer = customerRepository.save(customer);
+//            customer.setBalance(newBalance);
+//            Customer newCustomer = customerRepository.save(customer);
+
+            customerRepository.incrementBalance(transactionAmount, customer.getId());
 
             deposit.setId(0L);
             deposit.setCustomer(customer);
             depositRepository.save(deposit);
 
-            return newCustomer;
+            Optional<Customer> newCustomer = customerRepository.findById(customer.getId());
+
+            return newCustomer.get();
         } catch (Exception e) {
             e.printStackTrace();
             customer.setBalance(currentBalance);
@@ -72,22 +85,22 @@ public class CustomerServiceImpl implements ICustomerService {
     @Override
     public Customer transfer(Transfer transfer) {
         Customer sender = transfer.getSender();
-        sender.setBalance(sender.getBalance().subtract(transfer.getTransactionAmount()));
-        customerRepository.save(sender);
+//        sender.setBalance(sender.getBalance().subtract(transfer.getTransactionAmount()));
+//        Customer newSender = customerRepository.save(sender);
 
-        Customer recipient = transfer.getRecipient();
-        recipient.setBalance(recipient.getBalance().add(transfer.getTransferAmount()));
-        customerRepository.save(recipient);
+        customerRepository.reduceBalance(transfer.getTransactionAmount(), transfer.getSender().getId());
 
+//        Customer recipient = transfer.getRecipient();
+//        recipient.setBalance(recipient.getBalance().add(transfer.getTransferAmount()));
+//        customerRepository.save(recipient);
 
+        customerRepository.incrementBalance(transfer.getTransferAmount(), transfer.getRecipient().getId());
 
-//        if (currentBalanceSender.compareTo(transactionAmount) < 0) {
-//            return sender;
-//        }
+        transferRepository.save(transfer);
 
-//        BigDecimal newBalance = currentBalance.add(transactionAmount);
+        Optional<Customer> newSender = customerRepository.findById(transfer.getSender().getId());
 
-        return null;
+        return newSender.get();
     }
 
     @Override

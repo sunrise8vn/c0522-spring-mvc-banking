@@ -48,6 +48,24 @@ public class CustomerController {
         return modelAndView;
     }
 
+    @GetMapping("/edit/{customerId}")
+    public ModelAndView showUpdatePage(@PathVariable long customerId) {
+        ModelAndView modelAndView = new ModelAndView();
+        modelAndView.setViewName("customer/update");
+
+        Optional<Customer> customerOptional = customerService.findById(customerId);
+
+        if (!customerOptional.isPresent()){
+            modelAndView.addObject("error", true);
+        }
+
+        Customer customer = customerOptional.get();
+
+        modelAndView.addObject("customer", customer);
+
+        return modelAndView;
+    }
+
     @GetMapping("/deposit/{customerId}")
     public ModelAndView showDepositPage(@PathVariable long customerId) {
         ModelAndView modelAndView = new ModelAndView();
@@ -105,6 +123,26 @@ public class CustomerController {
         } catch (Exception e) {
             modelAndView.addObject("error", true);
         }
+
+        return modelAndView;
+    }
+
+    @PostMapping("/edit/{customerId}")
+    public ModelAndView doUpdate(@PathVariable long customerId, @ModelAttribute Customer customer) {
+        ModelAndView modelAndView = new ModelAndView();
+        modelAndView.setViewName("customer/update");
+
+        Boolean existsCustomer = customerService.existsByIdEquals(customerId);
+
+        if (!existsCustomer){
+            modelAndView.addObject("error", true);
+        }
+
+        customer.setId(customerId);
+
+        Customer newCustomer = customerService.save(customer);
+
+        modelAndView.addObject("customer", newCustomer);
 
         return modelAndView;
     }

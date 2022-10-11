@@ -11,6 +11,8 @@ public interface ICustomerService extends IGeneralService<Customer> {
 
     List<Customer> findAllByIdNot(long id);
 
+    Boolean existsByIdEquals(long id);
+
     Customer deposit(Customer customer, Deposit deposit);
 
     Customer transfer(Transfer transfer);

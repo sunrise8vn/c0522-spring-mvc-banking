@@ -22,7 +22,7 @@ public class Customer extends BaseEntity {
     private String phone;
     private String address;
 
-    @Column(precision = 12, scale = 0, nullable = false)
+    @Column(precision = 12, scale = 0, nullable = false, updatable = false)
     private BigDecimal balance;
 
 
