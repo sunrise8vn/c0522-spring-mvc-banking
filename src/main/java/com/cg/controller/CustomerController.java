@@ -4,10 +4,13 @@ package com.cg.controller;
 import com.cg.model.Customer;
 import com.cg.model.Deposit;
 import com.cg.model.Transfer;
+import com.cg.model.dto.DepositDTO;
 import com.cg.service.customer.ICustomerService;
 import com.cg.service.deposit.IDepositService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -109,9 +112,14 @@ public class CustomerController {
     }
 
     @PostMapping("/create")
-    public ModelAndView doCreate(@ModelAttribute Customer customer) {
+    public ModelAndView doCreate(@Validated @ModelAttribute Customer customer, BindingResult bindingResult) {
         ModelAndView modelAndView = new ModelAndView();
         modelAndView.setViewName("customer/create");
+
+        if (bindingResult.hasFieldErrors()) {
+            modelAndView.addObject("error", true);
+            return modelAndView;
+        }
 
         try {
             customer.setId(0L);
@@ -148,14 +156,28 @@ public class CustomerController {
     }
 
     @PostMapping("/deposit/{customerId}")
-    public ModelAndView doCreate(@PathVariable long customerId, @ModelAttribute Deposit deposit) {
+    public ModelAndView doCreate(@PathVariable long customerId, @Validated @ModelAttribute DepositDTO depositDTO, BindingResult bindingResult) {
         ModelAndView modelAndView = new ModelAndView();
         modelAndView.setViewName("customer/deposit");
 
+        new DepositDTO().validate(depositDTO, bindingResult);
+
         Optional<Customer> customerOptional = customerService.findById(customerId);
+
+        if (bindingResult.hasFieldErrors()) {
+            modelAndView.addObject("deposit", new Deposit());
+            modelAndView.addObject("customer", customerOptional.get());
+            modelAndView.addObject("error", true);
+            return modelAndView;
+        }
 
         try {
             Customer customer = customerOptional.get();
+
+            Deposit deposit = new Deposit();
+            BigDecimal transactionAmount = new BigDecimal(depositDTO.getTransactionAmount());
+            deposit.setTransactionAmount(transactionAmount);
+            deposit.setCustomer(customer);
 
             Customer newCustomer = customerService.deposit(customer, deposit);
 

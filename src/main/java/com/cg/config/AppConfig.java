@@ -109,7 +109,7 @@ public class AppConfig implements WebMvcConfigurer, ApplicationContextAware {
         dataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
         dataSource.setUrl("jdbc:mysql://localhost:3306/c0522_mvc_banking?characterEncoding=UTF-8");
         dataSource.setUsername("root");
-        dataSource.setPassword("123");
+        dataSource.setPassword("1234");
         return dataSource;
     }
 
@@ -139,24 +139,24 @@ public class AppConfig implements WebMvcConfigurer, ApplicationContextAware {
     @Bean(name = "messageSource")
     public MessageSource messageSource() {
         ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
-        messageSource.setBasenames("validationMessage");
+        messageSource.setBasenames("validation-message");
         messageSource.setDefaultEncoding("UTF-8");
         return messageSource;
     }
 
-    @Bean(name = "validator")
-    public LocalValidatorFactoryBean validator()
-    {
-        LocalValidatorFactoryBean bean = new LocalValidatorFactoryBean();
-        bean.setValidationMessageSource(messageSource());
-        return bean;
-    }
-
-    @Override
-    public Validator getValidator()
-    {
-        return validator();
-    }
+//    @Bean(name = "validator")
+//    public LocalValidatorFactoryBean validator()
+//    {
+//        LocalValidatorFactoryBean bean = new LocalValidatorFactoryBean();
+//        bean.setValidationMessageSource(messageSource());
+//        return bean;
+//    }
+//
+//    @Override
+//    public Validator getValidator()
+//    {
+//        return validator();
+//    }
 
 }
 
